@@ -1,10 +1,14 @@
 [package]
-name = "xextract"
-version = "0.1.1"
+name = "xExtract"
+version = "0.1.2"
 edition = "2024"
 rust-version = "1.95"
 description = "Lightweight MKV track extractor"
 license = "MIT OR Apache-2.0"
+
+[[bin]]
+name = "xextract"
+path = "src/main.rs"
 
 [dependencies]
 # Native Wayland/X11 windowing and direct egui/wgpu rendering. The desktop shell is
