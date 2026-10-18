@@ -33,6 +33,8 @@ cargo run --locked
 
 `shell.nix` provides Rust, Cargo, MKVToolNix, and the native Wayland, X11, and GPU libraries used by `egui` and `wgpu`. When both Wayland and XWayland are available, xExtract prefers X11 so file dropping works. In a Wayland-only session it uses Wayland. Set `XEXTRACT_BACKEND=wayland` to select Wayland explicitly.
 
+`rust-toolchain.toml` pins the current upstream stable Rust release for rustup users. As of October 18, 2026, the Nixpkgs revision available here provides Rust 1.98.1 while upstream stable is 1.99.1. Nix builds use the packaged compiler until Nixpkgs provides 1.99.1; both toolchains are validated for this release.
+
 The default window size is 960 × 840 logical points, with a minimum of 900 × 760.
 
 To build an optimized development binary:
