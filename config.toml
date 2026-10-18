@@ -1,0 +1,68 @@
+# xExtract Configuration File
+# Modern and high-performance MKV track extraction tool
+
+# Path to MKVToolNix binaries (mkvmerge, mkvextract)
+# Leave empty if they are in your system PATH.
+# The Nix package adds MKVToolNix to PATH automatically.
+MKVToolNixDir = ""
+
+# --- Naming Patterns ---
+# Available Placeholders:
+#   {Filename}           - Original file name (with extension)
+#   {FilenameNoExt}      - Original file name (without extension)
+#   {TrackID:00}         - Track ID with zero-padding (e.g., 00, 01, 02)
+#   {Language}           - Track language (favors IETF format: "en", "pt")
+#   {Flags}              - Subtitle flags in standard order (e.g., Forced.SDH)
+#   {AttachmentFilename} - Original filename of the attachment
+#
+# Use '/' to create subdirectories (e.g., "Subs/{FilenameNoExt}_{Language}")
+[patterns]
+VideoTracks = "{FilenameNoExt}.Track{TrackID:00}.{Language}"
+AudioTracks = "{FilenameNoExt}.Track{TrackID:00}.{Language}"
+SubtitleTracks = "{FilenameNoExt}.Track{TrackID:00}.{Language}.{Flags}"
+Chapters = "Chapters/{FilenameNoExt}"
+Attachments = "Attachments/{AttachmentFilename}"
+
+# --- Extraction Profiles ---
+# Profiles simplify the UI by allowing you to quickly switch between common tasks.
+# Setting "ArchiveMode: true" remuxes selected tracks into a 1:1 .mkv container instead of extracting separate files.
+# Extract fields accept booleans (true/false), language strings ("pt-BR"), or lists (["pt-BR", "por"]).
+[[profiles]]
+name = "Full Extract"
+ArchiveMode = false
+ExtractVideo = false
+ExtractAudio = false
+ExtractSubtitles = true
+ExtractChapters = true
+ExtractAttachments = true
+OutputDir = false
+
+[[profiles]]
+name = "Subs Only"
+ArchiveMode = false
+ExtractVideo = false
+ExtractAudio = false
+ExtractSubtitles = true
+ExtractChapters = false
+ExtractAttachments = false
+OutputDir = false
+
+[[profiles]]
+name = "pt-BR Only"
+ArchiveMode = false
+ExtractVideo = false
+ExtractAudio = ["pt-BR", "por"]
+ExtractSubtitles = ["pt-BR", "por"]
+ExtractChapters = false
+ExtractAttachments = false
+OutputDir = false
+
+[[profiles]]
+name = "Archive"
+ArchiveMode = true
+ExtractVideo = false
+ExtractAudio = true
+ExtractSubtitles = true
+ExtractChapters = true
+ExtractAttachments = true
+OutputDir = false

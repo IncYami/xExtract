@@ -1,0 +1,24 @@
+# Project notes for coding agents
+
+## Project
+
+- xExtract is a Rust 2024 desktop application for inspecting Matroska files and extracting tracks, chapters, and attachments with MKVToolNix.
+- The GUI uses egui/wgpu and winit with Wayland and X11 backends. In sessions exposing both `WAYLAND_DISPLAY` and `DISPLAY`, xExtract prefers X11/XWayland because winit 0.30 does not deliver file-drop events on its Wayland backend. `XEXTRACT_BACKEND=wayland` overrides that preference.
+- `mkvmerge` and `mkvextract` are external runtime commands; the Nix package adds MKVToolNix to `PATH`.
+
+## NixOS build and launch
+
+- Use `nix-build` to build the wrapped app package. Run it with `./result/bin/xextract`; this launcher sets the runtime library path, `XKB_CONFIG_ROOT`, and MKVToolNix `PATH` without entering `nix-shell` or installing the package into a Nix profile.
+- `target/release/xextract` is the raw Cargo ELF. It can fail outside the development shell because NixOS runtime libraries such as `libxkbcommon` are dynamically loaded and are not all discoverable by the ELF on its own.
+- Keep runtime library and XKB data configuration in `default.nix` in sync with `shell.nix`.
+
+## Rust changes
+
+- Keep dependency and build changes compatible with the locked dependency set; use `cargo ... --locked` for reproducible commands.
+- Preserve file-drop support through X11/XWayland and retain Wayland startup for Wayland-only sessions.
+
+## Git and versioning
+
+- After completing any project change, commit it and push the updated `main` branch to `origin`. Do not leave completed changes only in the local working tree.
+- Every commit that changes Rust application code must also increase the package version in `Cargo.toml` and update `Cargo.lock` in the same commit. Use semantic versioning: increase the patch number for fixes or internal changes, the minor number for new functionality while the project is in `0.x`, and the major number for incompatible changes after `1.0.0`.
+- Documentation-only, instruction-only, and Nix packaging-only changes do not require an application version increase.

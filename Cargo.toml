@@ -1,0 +1,28 @@
+[package]
+name = "xextract"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+description = "Lightweight MKV track extractor"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+# Native Wayland/X11 windowing and direct egui/wgpu rendering. The desktop shell is
+# kept explicit so the dependency tree stays small and predictable.
+egui = { version = "0.36", default-features = false, features = ["default_fonts"] }
+egui-wgpu = { version = "0.36", default-features = false, features = ["wayland", "winit", "x11"] }
+egui-winit = { version = "0.36", default-features = false, features = ["bytemuck", "clipboard", "wayland", "x11"] }
+pollster = "1"
+rfd = "0.17"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.9"
+wgpu = { version = "30", default-features = false, features = ["vulkan"] }
+winit = { version = "0.30", default-features = false, features = ["wayland", "x11"] }
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+opt-level = "s"
+panic = "abort"
+strip = true

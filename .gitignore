@@ -1,0 +1,6 @@
+/target/
+/.direnv/
+result
+/core
+/core.*
+*.core
