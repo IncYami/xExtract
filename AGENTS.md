@@ -16,7 +16,10 @@
 
 - Keep dependency and build changes compatible with the locked dependency set; use `cargo ... --locked` for reproducible commands.
 - Preserve file-drop support through X11/XWayland and retain Wayland startup for Wayland-only sessions.
-- For every Rust application or dependency change, check the latest stable Rust release and the latest stable releases of direct dependencies. Update the Rust toolchain, direct dependencies, and `Cargo.lock` to those versions, adapting application code to changed APIs and keeping `default.nix` and `shell.nix` compatible. If an update is blocked, document the concrete incompatibility and revisit it in the next Rust change.
+
+## Rust maintenance and security
+
+- For every Rust application or dependency change, check the latest stable Rust release and the latest stable releases of direct dependencies. Update the Rust toolchain, direct dependencies, and `Cargo.lock` to those versions, adapting application code to changed APIs and keeping the project's build and packaging configuration compatible. If an update is blocked, document the concrete incompatibility and revisit it in the next Rust change.
 - Keep the architecture clean and simple. Prefer the standard library or dependencies already in use, remove unused crates, and add only the smallest set of dependencies needed. Prefer well-maintained crates backed by an official vendor, an established organization, or active professional contributors; review maintenance and provenance before adding one.
 - Run `cargo audit` against `Cargo.lock` after dependency changes and before completing Rust application changes. Resolve actionable security advisories before committing, and document any advisory that cannot yet be resolved.
 
