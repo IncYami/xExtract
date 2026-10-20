@@ -148,7 +148,7 @@ impl ApplicationHandler for NativeApp {
         let window = match event_loop.create_window(attributes) {
             Ok(window) => Arc::new(window),
             Err(error) => {
-                eprintln!("Could not create the Wayland window: {error}");
+                eprintln!("Could not create the window: {error}");
                 event_loop.exit();
                 return;
             }
@@ -167,7 +167,7 @@ impl ApplicationHandler for NativeApp {
         if let Err(error) =
             pollster::block_on(painter.set_window(ViewportId::ROOT, Some(window.clone())))
         {
-            eprintln!("Could not initialize the Wayland wgpu surface: {error}");
+            eprintln!("Could not initialize the wgpu surface: {error}");
             event_loop.exit();
             return;
         }

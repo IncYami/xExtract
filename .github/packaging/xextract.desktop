@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=xExtract
+Comment=Extract tracks from Matroska files
+Exec=xextract %F
+Icon=xextract
+MimeType=video/x-matroska;
+Terminal=false
+Categories=AudioVideo;Utility;

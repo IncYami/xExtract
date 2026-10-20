@@ -2,6 +2,18 @@
 
 xExtract is a desktop application for inspecting Matroska files and extracting tracks, chapters, and attachments with MKVToolNix.
 
+## Build artifacts for desktop systems
+
+The [Build desktop packages](.github/workflows/build.yml) GitHub Action runs on pushes to `main`, pull requests, and manual dispatches. Each run uploads five artifacts:
+
+| System | x64 | ARM64 |
+| --- | --- | --- |
+| Linux | `xExtract-linux-x86_64.AppImage` | `xExtract-linux-aarch64.AppImage` |
+| Windows | `xExtract-windows-x64.zip` | `xExtract-windows-ARM64.zip` |
+| macOS | — | `xExtract-macos-ARM64.zip` |
+
+The Linux packages are AppImages built on Ubuntu 26.04. The Windows ZIP files contain `xextract.exe`; the macOS ZIP file contains `xExtract.app`. The macOS app has an ad hoc signature, without Apple Developer ID signing or notarization, so Gatekeeper may ask you to approve it on first launch. The artifacts contain xExtract only: install MKVToolNix separately and make `mkvmerge` and `mkvextract` available on `PATH`, or set `MKVToolNixDir` in `config.toml` to their directory. The latter is useful when launching the macOS app from Finder. Linux also needs a desktop session with X11 or Wayland, `libxkbcommon`, and a working Vulkan driver. AppImages built on Ubuntu 26.04 require a similarly recent glibc; older Linux distributions are outside this build's scope.
+
 ## Install on NixOS
 
 Clone the `main` branch and install the package into your user profile:

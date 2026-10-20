@@ -1,6 +1,6 @@
 [package]
 name = "xExtract"
-version = "0.1.2"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.95"
 description = "Lightweight MKV track extractor"
@@ -16,12 +16,12 @@ path = "src/main.rs"
 egui = { version = "0.37", default-features = false, features = ["default_fonts"] }
 egui-wgpu = { version = "0.37", default-features = false, features = ["wayland", "winit", "x11"] }
 egui-winit = { version = "0.37", default-features = false, features = ["bytemuck", "clipboard", "wayland", "x11"] }
-pollster = "1"
+pollster = "1.0.1"
 rfd = "0.17"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "1.1"
-wgpu = { version = "30", default-features = false, features = ["vulkan"] }
+wgpu = { version = "30", default-features = false, features = ["vulkan", "metal", "dx12", "static-dxc"] }
 winit = { version = "0.30", default-features = false, features = ["wayland", "x11"] }
 
 [profile.release]

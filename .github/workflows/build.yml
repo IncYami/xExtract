@@ -1,0 +1,104 @@
+name: Build desktop packages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.system }} ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - system: Linux
+            arch: x64
+            runner: ubuntu-26.04
+            target: x86_64-unknown-linux-gnu
+            appimage_arch: x86_64
+          - system: Linux
+            arch: ARM64
+            runner: ubuntu-26.04-arm
+            target: aarch64-unknown-linux-gnu
+            appimage_arch: aarch64
+          - system: Windows
+            arch: x64
+            runner: windows-2025
+            target: x86_64-pc-windows-msvc
+          - system: Windows
+            arch: ARM64
+            runner: windows-11-vs2026-arm
+            target: aarch64-pc-windows-msvc
+          - system: macOS
+            arch: ARM64
+            runner: macos-26
+            target: aarch64-apple-darwin
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Linux build libraries
+        if: matrix.system == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libdbus-1-dev libwayland-dev libxkbcommon-dev libx11-dev libxcursor-dev libxi-dev libxrandr-dev pkg-config
+      - uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          target: ${{ matrix.target }}
+      - name: Check and build
+        run: |
+          cargo test --locked --target ${{ matrix.target }}
+          cargo build --release --locked --target ${{ matrix.target }}
+      - name: Package Linux AppImage
+        if: matrix.system == 'Linux'
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          APPIMAGE_ARCH: ${{ matrix.appimage_arch }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist AppDir/usr/bin
+          install -m 755 "target/$TARGET/release/xextract" AppDir/usr/bin/xextract
+          install -m 644 .github/packaging/xextract.desktop AppDir/xextract.desktop
+          install -m 644 .github/packaging/xextract.svg AppDir/xextract.svg
+          ln -s xextract.svg AppDir/.DirIcon
+          install -m 755 .github/packaging/AppRun AppDir/AppRun
+          curl --fail --location --retry 3 --output appimagetool.AppImage \
+            "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-$APPIMAGE_ARCH.AppImage"
+          chmod +x appimagetool.AppImage
+          ARCH="$APPIMAGE_ARCH" ./appimagetool.AppImage --appimage-extract-and-run \
+            AppDir "dist/xExtract-linux-$APPIMAGE_ARCH.AppImage"
+          test -s "dist/xExtract-linux-$APPIMAGE_ARCH.AppImage"
+          chmod +x "dist/xExtract-linux-$APPIMAGE_ARCH.AppImage"
+      - name: Package Windows ZIP
+        if: matrix.system == 'Windows'
+        shell: pwsh
+        env:
+          TARGET: ${{ matrix.target }}
+          ARCH: ${{ matrix.arch }}
+        run: |
+          New-Item -ItemType Directory -Path dist -Force | Out-Null
+          Compress-Archive -Path "target/$env:TARGET/release/xextract.exe" -DestinationPath "dist/xExtract-windows-$env:ARCH.zip"
+      - name: Package macOS app
+        if: matrix.system == 'macOS'
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          ARCH: ${{ matrix.arch }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist xExtract.app/Contents/MacOS
+          install -m 755 "target/$TARGET/release/xextract" xExtract.app/Contents/MacOS/xextract
+          install -m 644 .github/packaging/Info.plist xExtract.app/Contents/Info.plist
+          codesign --force --deep --sign - xExtract.app
+          ditto -c -k --sequesterRsrc --keepParent xExtract.app "dist/xExtract-macos-$ARCH.zip"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: xExtract-${{ matrix.system }}-${{ matrix.arch }}
+          path: dist/*
+          if-no-files-found: error

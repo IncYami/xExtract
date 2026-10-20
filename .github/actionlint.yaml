@@ -1,0 +1,6 @@
+# actionlint 1.7.12 predates these current runner labels.
+paths:
+  .github/workflows/build.yml:
+    ignore:
+      - 'label "ubuntu-26\.04(-arm)?" is unknown'
+      - 'label "windows-11-vs2026-arm" is unknown'
