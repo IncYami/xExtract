@@ -17,6 +17,13 @@
 - Keep dependency and build changes compatible with the locked dependency set; use `cargo ... --locked` for reproducible commands.
 - Preserve file-drop support through X11/XWayland and retain Wayland startup for Wayland-only sessions.
 
+## Technical writing
+
+- Use the current [ASD-STE100 Simplified Technical English standard](https://www.asd-ste100.org/) for new or edited English documentation and code comments. Apply it to README files, configuration comments, user-facing help and error messages, commit messages, and release or pull request descriptions when useful.
+- Use the standard's approved words and meanings. Use consistent project terms for names such as Rust, Matroska, MKVToolNix, commands, API identifiers, and file paths. Explain a project term when readers might not know it.
+- Write one topic per sentence. Use active voice. Keep procedural sentences at 20 words or fewer and descriptive sentences at 25 words or fewer. Write one action per instruction and start instructions with a command verb.
+- Review the text against the official rules and dictionary before you claim ASD-STE100 compliance. Keep required code syntax, exact command names, quoted output, and translated text intact.
+
 ## Rust maintenance and security
 
 - For every Rust application or dependency change, check the latest stable Rust release and the latest stable releases of direct dependencies. Update the Rust toolchain, direct dependencies, and `Cargo.lock` to those versions, adapting application code to changed APIs and keeping the project's build and packaging configuration compatible. If an update is blocked, document the concrete incompatibility and revisit it in the next Rust change.
