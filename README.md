@@ -2,9 +2,9 @@
 
 xExtract is a desktop application for inspecting Matroska files and extracting tracks, chapters, and attachments with MKVToolNix.
 
-## Build artifacts for desktop systems
+## Desktop releases
 
-The [Build desktop packages](.github/workflows/build.yml) GitHub Action runs on pushes to `main`, pull requests, and manual dispatches. Each run uploads five artifacts:
+Download packages from [GitHub Releases](https://github.com/IncYami/xExtract/releases). The [build and release workflow](.github/workflows/build.yml) publishes a release when `main` has a package version that has no release. It uses `Cargo.toml` for the `vX.Y.Z` tag and checks that `Cargo.lock` has the same version. Pull requests build the packages for validation. Each release contains five packages and a `SHA256SUMS` file:
 
 | System | x64 | ARM64 |
 | --- | --- | --- |

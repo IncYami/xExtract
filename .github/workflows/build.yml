@@ -1,4 +1,4 @@
-name: Build desktop packages
+name: Build and release desktop packages
 
 on:
   push:
@@ -10,8 +10,54 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
+  prepare:
+    runs-on: ubuntu-26.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      publish: ${{ steps.version.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check package version
+        id: version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version=$(python3 - <<'PY'
+          import tomllib
+
+          with open('Cargo.toml', 'rb') as source:
+              version = tomllib.load(source)['package']['version']
+          with open('Cargo.lock', 'rb') as source:
+              packages = tomllib.load(source)['package']
+          locked = next(package['version'] for package in packages if package['name'] == 'xExtract')
+          if version != locked:
+              raise SystemExit('Cargo.toml and Cargo.lock have different package versions')
+          print(version)
+          PY
+          )
+          if [[ ! $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "Package version must use X.Y.Z: $version" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [[ $GITHUB_EVENT_NAME == pull_request ]]; then
+            echo 'publish=false' >> "$GITHUB_OUTPUT"
+          elif gh release view "v$version" >/dev/null 2>&1; then
+            echo 'publish=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'publish=true' >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: prepare
+    if: github.event_name == 'pull_request' || needs.prepare.outputs.publish == 'true'
     name: ${{ matrix.system }} ${{ matrix.arch }}
     strategy:
       fail-fast: false
@@ -97,8 +143,45 @@ jobs:
           install -m 644 .github/packaging/Info.plist xExtract.app/Contents/Info.plist
           codesign --force --deep --sign - xExtract.app
           ditto -c -k --sequesterRsrc --keepParent xExtract.app "dist/xExtract-macos-$ARCH.zip"
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
+        if: needs.prepare.outputs.publish == 'true'
         with:
           name: xExtract-${{ matrix.system }}-${{ matrix.arch }}
           path: dist/*
           if-no-files-found: error
+
+  release:
+    needs: [prepare, build]
+    if: github.event_name != 'pull_request' && needs.prepare.outputs.publish == 'true'
+    runs-on: ubuntu-26.04
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: xExtract-*
+          path: release
+          merge-multiple: true
+      - name: Check assets and publish release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          for asset in \
+            xExtract-linux-x86_64.AppImage \
+            xExtract-linux-aarch64.AppImage \
+            xExtract-windows-x64.zip \
+            xExtract-windows-ARM64.zip \
+            xExtract-macos-ARM64.zip; do
+            test -s "release/$asset"
+          done
+          cd release
+          sha256sum xExtract-* > SHA256SUMS
+          gh release create "v$VERSION" ./* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "xExtract $VERSION" \
+            --generate-notes
